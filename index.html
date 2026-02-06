@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Virtual Color Mixing Lab (No Server)</title>
+
+  <!-- Pyodide CDN (official quickstart) -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.28.0/full/pyodide.js"></script> <!-- [page:45] -->
+
+  <style>
+    :root{
+      --bg1:#f8faf9; --bg2:#f1f5f4; --ink:#1a202c; --muted:#64748b;
+      --card:#ffffff; --line:#e2e8f0; --accent:#10b981; --accent2:#059669;
+      --shadow:0 25px 60px rgba(0,0,0,.08); --r:20px; --r-sm:12px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(900px 600px at 15% 10%, rgba(16,185,129,.08), transparent 55%),
+        radial-gradient(900px 600px at 90% 15%, rgba(5,150,105,.06), transparent 55%),
+        linear-gradient(160deg,var(--bg1),var(--bg2));
+      min-height:100vh; padding:32px;
+    }
+    .shell{
+      max-width:1600px; margin:0 auto; background:var(--card);
+      border:1px solid var(--line); border-radius:calc(var(--r) + 8px);
+      box-shadow:var(--shadow); overflow:hidden;
+    }
+    header{
+      padding:26px 36px; border-bottom:1px solid var(--line);
+      background:linear-gradient(135deg, rgba(16,185,129,.06), rgba(5,150,105,.04)),
+                 linear-gradient(0deg, rgba(255,255,255,.85), rgba(255,255,255,.85));
+    }
+    .row{display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; align-items:flex-end;}
+    h1{
+      margin:0; font-size:32px; font-weight:800; letter-spacing:-.02em;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .subtitle{margin-top:8px; color:var(--muted); font-size:15px; line-height:1.5; max-width:950px; font-weight:500;}
+    .layout{display:grid; grid-template-columns:1fr 1fr; gap:24px; padding:24px;}
+    @media (max-width:1200px){.layout{grid-template-columns:1fr}}
+    .card{background:var(--card); border:1px solid var(--line); border-radius:var(--r); overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,.05);}
+    .head{padding:24px 24px 20px; border-bottom:1px solid var(--line); background:var(--bg1);}
+    .head h2{margin:0; font-size:18px; font-weight:750;}
+    .body{padding:24px;}
+    .rules{background:var(--bg2); border:1px solid var(--line); border-radius:var(--r-sm); padding:16px 18px; color:var(--muted); font-size:14px; line-height:1.6; font-weight:600;}
+    .rules code{background:var(--line); padding:2px 6px; border-radius:4px; font-size:13px;}
+    textarea{
+      width:100%; min-height:440px; resize:vertical; border:1px solid rgba(226,232,240,.25);
+      border-radius:var(--r-sm); padding:16px; font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size:14px; line-height:1.55; background:linear-gradient(180deg,#0b1220,#0a0f1a); color:#e5e7eb;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 10px 30px rgba(0,0,0,.10);
+    }
+    textarea:focus{outline:2px solid rgba(16,185,129,.35); outline-offset:2px;}
+    .controls{display:flex; gap:12px; flex-wrap:wrap; margin-top:16px;}
+    button{
+      appearance:none; border:none; padding:12px 20px; border-radius:var(--r-sm);
+      font-weight:750; cursor:pointer; transition:all .2s ease; font-size:14px;
+    }
+    button:hover{transform:translateY(-1px);}
+    .primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; box-shadow:0 8px 24px rgba(16,185,129,.3);}
+    .primary:hover{box-shadow:0 12px 32px rgba(16,185,129,.4); transform:translateY(-2px);}
+    .secondary{background:var(--bg2); color:var(--ink); border:1px solid var(--line);}
+    .status{
+      border-radius:var(--r-sm); border:1px solid var(--line); background:var(--bg1);
+      padding:14px 16px; color:var(--muted); font-size:14px; line-height:1.5; margin-bottom:16px; font-weight:650;
+    }
+    .status.ok{background:rgba(16,185,129,.08); border-color:rgba(16,185,129,.25); color:#065f46;}
+    .status.err{background:rgba(239,68,68,.08); border-color:rgba(239,68,68,.25); color:#b91c1c;}
+    .grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+    @media (max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}}
+    .tile{
+      border-radius:var(--r-sm); border:1px solid var(--line); background:var(--bg1);
+      padding:16px 18px; min-height:72px; display:flex; flex-direction:column; justify-content:center;
+    }
+    .name{font-size:13px; color:var(--muted); font-weight:700; margin-bottom:6px;}
+    .value{font-size:20px; font-weight:850; letter-spacing:-.02em;}
+    .swatch{width:32px; height:24px; border-radius:8px; border:1px solid rgba(0,0,0,.1); display:inline-block; vertical-align:middle; box-shadow:0 2px 8px rgba(0,0,0,.15);}
+    .console{
+      margin-top:16px; border-radius:var(--r-sm); border:1px solid var(--line); background:var(--bg1);
+      padding:16px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size:13px;
+      max-height:240px; overflow:auto; white-space:pre-wrap;
+    }
+    .table-wrap{border-radius:var(--r); border:1px solid var(--line); overflow:auto; max-height:420px; background:var(--bg1);}
+    table{width:100%; border-collapse:collapse; font-size:13px;}
+    thead th{
+      position:sticky; top:0; background:var(--bg2); border-bottom:1px solid var(--line);
+      padding:14px 12px; text-align:left; font-weight:800; white-space:nowrap;
+    }
+    tbody td{padding:12px 12px; border-bottom:1px solid var(--line); white-space:nowrap;}
+    tbody tr:nth-child(even){background:rgba(248,250,249,.8);}
+    .hint{font-size:13px; color:var(--muted); margin-top:16px; line-height:1.6; font-weight:650;}
+  </style>
+</head>
+
+<body>
+  <div class="shell">
+    <header>
+      <div class="row">
+        <div style="width:100%">
+          <h1>Virtual Color Mixing Lab</h1>
+          <div class="subtitle">
+            No-server version: runs Python in your browser with Pyodide (GitHub Pages compatible). <!-- [page:45] -->
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="card">
+        <div class="head"><h2>Experiment Design</h2></div>
+        <div class="body">
+          <div class="rules">
+            Define <code>experimentdesign</code> as a list of dicts. Each dict must include <code>R</code>, <code>Y</code>, <code>B</code>, and optional <code>well</code>.
+          </div>
+
+          <textarea id="code"># One experiment example:
+experimentdesign = [{"R": 298, "Y": 1, "B": 1, "well": "A1"}]
+print("Designed", len(experimentdesign), "experiments")</textarea>
+
+          <div class="controls">
+            <button class="primary" id="btn-run">Run</button>
+            <button class="secondary" id="btn-doe">Load DOE</button>
+            <button class="secondary" id="btn-clear">Clear</button>
+          </div>
+
+          <div class="console" id="console">Ready.</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="head"><h2>Results</h2></div>
+        <div class="body">
+          <div id="status" class="status">Initializing Pyodide…</div>
+
+          <div class="grid">
+            <div class="tile"><div class="name">Mixture (approx)</div><div class="value"><span class="swatch" id="mix-sw"></span></div></div>
+            <div class="tile"><div class="name">Sensor (not computed)</div><div class="value"><span class="swatch" id="sen-sw" style="background:#ffffff"></span></div></div>
+            <div class="tile"><div class="name">Intensity</div><div class="value" id="sen-I">—</div></div>
+            <div class="tile"><div class="name">Well</div><div class="value" id="latest-well">—</div></div>
+          </div>
+
+          <div style="height:16px"></div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Well</th><th>R</th><th>Y</th><th>B</th><th>Mix</th><th>Intensity</th>
+                  <th>ch410</th><th>ch440</th><th>ch470</th><th>ch510</th><th>ch550</th><th>ch583</th><th>ch620</th><th>ch670</th>
+                </tr>
+              </thead>
+              <tbody id="tbody">
+                <tr><td colspan="15" style="padding:18px;color:var(--muted)">No results yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="controls" style="margin-top:20px">
+            <button class="primary" id="btn-csv">Download CSV</button>
+          </div>
+
+          <div class="hint">
+            Tip: This version does not use Flask. It runs your experimentdesign Python directly in Pyodide. <!-- [page:45] -->
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+<script>
+  function setStatus(t, kind) {
+    const el = document.getElementById("status");
+    el.textContent = t;
+    el.className = "status" + (kind ? " " + kind : "");
+  }
+  function setConsole(t) { document.getElementById("console").textContent = t; }
+
+  function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+  function rgb01ToHex(r,g,b){
+    const rr = Math.round(clamp01(r)*255).toString(16).padStart(2,"0");
+    const gg = Math.round(clamp01(g)*255).toString(16).padStart(2,"0");
+    const bb = Math.round(clamp01(b)*255).toString(16).padStart(2,"0");
+    return ("#" + rr + gg + bb).toUpperCase();
+  }
+  function mixtureHex(R,Y,B){
+    const tot = Math.max(1e-9, R+Y+B);
+    const red = [220,60,60], yel = [235,200,70], blu=[60,95,215];
+    const mix = [
+      (R/tot)*red[0] + (Y/tot)*yel[0] + (B/tot)*blu[0],
+      (R/tot)*red[1] + (Y/tot)*yel[1] + (B/tot)*blu[1],
+      (R/tot)*red[2] + (Y/tot)*yel[2] + (B/tot)*blu[2],
+    ].map(v => Math.max(0, Math.min(255, v)));
+    return "#" + mix.map(v => Math.round(v).toString(16).padStart(2,"0")).join("").toUpperCase();
+  }
+
+  function renderLatest(r){
+    document.getElementById("mix-sw").style.background = r.mixturehex || "#ffffff";
+    document.getElementById("sen-I").textContent = (r.sensorintensity !== undefined) ? Math.round(r.sensorintensity) : "—";
+    document.getElementById("latest-well").textContent = r.well || "—";
+  }
+
+  function renderTable(results){
+    const tbody = document.getElementById("tbody");
+    tbody.innerHTML = "";
+    if (!results || !results.length){
+      tbody.innerHTML = `<tr><td colspan="15" style="padding:18px;color:var(--muted)">No results yet.</td></tr>`;
+      return;
+    }
+    for (let i=0;i<results.length;i++){
+      const r = results[i];
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${i+1}</td>
+        <td>${r.well}</td>
+        <td>${r.Red}</td>
+        <td>${r.Yellow}</td>
+        <td>${r.Blue}</td>
+        <td><span class="swatch" style="background:${r.mixturehex}"></span></td>
+        <td>${(r.sensorintensity !== undefined) ? Math.round(r.sensorintensity) : ""}</td>
+        <td>${r.ch410}</td><td>${r.ch440}</td><td>${r.ch470}</td><td>${r.ch510}</td>
+        <td>${r.ch550}</td><td>${r.ch583}</td><td>${r.ch620}</td><td>${r.ch670}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+    renderLatest(results[results.length - 1]);
+  }
+
+  // Pyodide init (official usage: load pyodide.js then await loadPyodide()) [page:45]
+  let pyodideReadyPromise = null;
+
+  async function initPyodideOnce(){
+    setStatus("Initializing Pyodide… (first load can take a bit)", "");
+    const pyodide = await loadPyodide(); // [page:45]
+    setStatus("Loading Python packages (numpy, pandas)…", "");
+    await pyodide.loadPackage(["numpy", "pandas"]);
+    setStatus("Loading lab code…", "");
+
+    const labCode = await (await fetch("./virtual_color_mixing_lab_pyodide.py")).text();
+    pyodide.runPython(labCode);
+
+    pyodide.runPython(`
+lab = VirtualColorMixingLab(randomseed=42, systematicnoiselevel=0.10, randomnoiselevel=0.02)
+`);
+    setStatus("Ready.", "ok");
+    return pyodide;
+  }
+
+  async function getPyodide(){
+    if (!pyodideReadyPromise) pyodideReadyPromise = initPyodideOnce();
+    return pyodideReadyPromise;
+  }
+
+  async function runBatch(){
+    setConsole("Running…");
+    try{
+      const pyodide = await getPyodide();
+      const userCode = document.getElementById("code").value;
+
+      // Execute user python; must define experimentdesign
+      pyodide.runPython(userCode);
+
+      // Run batch using the lab
+      pyodide.runPython(`
+df = lab.run_experiment_batch(experimentdesign)
+results = df.to_dict(orient="records")
+`);
+
+      const results = pyodide.globals.get("results").toJs(); // [page:45]
+      // add mixture swatches + intensity (computed from channels)
+      for (const r of results){
+        r.mixturehex = mixtureHex(Number(r.Red), Number(r.Yellow), Number(r.Blue));
+        r.sensorintensity =
+          Number(r.ch410)+Number(r.ch440)+Number(r.ch470)+Number(r.ch510)+
+          Number(r.ch550)+Number(r.ch583)+Number(r.ch620)+Number(r.ch670);
+      }
+
+      renderTable(results);
+      setConsole("Done.");
+      setStatus(`Executed ${results.length} experiments.`, "ok");
+    } catch(e){
+      setConsole(String(e));
+      setStatus("Execution error: " + e, "err");
+    }
+  }
+
+  async function downloadCSV(){
+    try{
+      const pyodide = await getPyodide();
+      pyodide.runPython(`csv_text = lab.export_results_df().to_csv(index=False)`);
+      const csvText = pyodide.globals.get("csv_text");
+
+      const blob = new Blob([csvText], {type:"text/csv"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `colorresults_${Date.now()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setStatus("CSV downloaded.", "ok");
+    } catch(e){
+      setStatus("Download error: " + e, "err");
+    }
+  }
+
+  document.getElementById("btn-run").addEventListener("click", runBatch);
+  document.getElementById("btn-csv").addEventListener("click", downloadCSV);
+
+  document.getElementById("btn-doe").addEventListener("click", () => {
+    document.getElementById("code").value =
+`# DOE: 24 mixtures
+experimentdesign = []
+for i in range(24):
+    R = 10 + (i % 6) * 20
+    Y = 10 + (i // 6) * 4 * 30
+    B = 300 - R - Y
+    if B < 1:
+        continue
+    experimentdesign.append({"R": R, "Y": Y, "B": B})
+print("Designed", len(experimentdesign), "experiments")`;
+  });
+
+  document.getElementById("btn-clear").addEventListener("click", () => {
+    if (confirm("Clear the script?")) document.getElementById("code").value = "";
+  });
+
+  // Start initialization in background
+  getPyodide();
+</script>
+</body>
+</html>
