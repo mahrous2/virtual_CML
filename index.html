@@ -10,7 +10,7 @@
 
   <style>
     :root{
-      --bg1:#f8faf9; --bg2:#f1f5f4--ink:#1a202c; --muted:#64748b;
+      --bg1:#f8faf9; --bg2:#f1f5f4; --ink:#1a202c; --muted:#64748b;
       --card:#ffffff; --line:#e2e8f0; --accent:#10b981; --accent2:#059669;
       --shadow:0 25px 60px rgba(0,0,0,.08); --r:20px; --r-sm:12px;
     }
@@ -157,7 +157,7 @@ print("Designed", len(experimentdesign), "experiments")</textarea>
 
           <div class="grid">
             <div class="tile"><div class="name">Mixture (approx)</div><div class="value"><span class="swatch" id="mix-sw"></span></div></div>
-            <div class="tile"><div class="name">Sensor (not computed)</div><div class="value"><span class="swatch" id="sen-sw" style="background:#ffffff"></span></div></div>
+            <div class="tile"><div class="name">Sensor</div><div class="value"><span class="swatch" id="sen-sw" style="background:#ffffff"></span></div></div>
             <div class="tile"><div class="name">Intensity</div><div class="value" id="sen-I">—</div></div>
             <div class="tile"><div class="name">Well</div><div class="value" id="latest-well">—</div></div>
           </div>
@@ -168,12 +168,12 @@ print("Designed", len(experimentdesign), "experiments")</textarea>
             <table>
               <thead>
                 <tr>
-                  <th>#</th><th>Well</th><th>R</th><th>Y</th><th>B</th><th>Mix</th><th>Intensity</th>
+                  <th>#</th><th>Well</th><th>R</th><th>Y</th><th>B</th><th>Mix</th><th>Sensor</th><th>Intensity</th>
                   <th>ch410</th><th>ch440</th><th>ch470</th><th>ch510</th><th>ch550</th><th>ch583</th><th>ch620</th><th>ch670</th>
                 </tr>
               </thead>
               <tbody id="tbody">
-                <tr><td colspan="15" style="padding:18px;color:var(--muted)">No results yet.</td></tr>
+                <tr><td colspan="16" style="padding:18px;color:var(--muted)">No results yet.</td></tr>
               </tbody>
             </table>
           </div>
@@ -205,6 +205,7 @@ print("Designed", len(experimentdesign), "experiments")</textarea>
     const bb = Math.round(clamp01(b)*255).toString(16).padStart(2,"0");
     return ("#" + rr + gg + bb).toUpperCase();
   }
+
   function mixtureHex(R,Y,B){
     const tot = Math.max(1e-9, R+Y+B);
     const red = [220,60,60], yel = [235,200,70], blu=[60,95,215];
@@ -216,8 +217,25 @@ print("Designed", len(experimentdesign), "experiments")</textarea>
     return "#" + mix.map(v => Math.round(v).toString(16).padStart(2,"0")).join("").toUpperCase();
   }
 
+  function sensorToHex(r){
+    const v = [
+      Number(r.ch410), Number(r.ch440), Number(r.ch470), Number(r.ch510),
+      Number(r.ch550), Number(r.ch583), Number(r.ch620), Number(r.ch670),
+    ];
+    const sum = v.reduce((a,b)=>a+b, 0) || 1;
+
+    // Approximate RGB from 8 bands (simple, fast, visually useful).
+    const b = (v[0] + 1.2*v[1] + 0.9*v[2]) / sum;
+    const g = (1.0*v[3] + 1.2*v[4] + 0.6*v[5]) / sum;
+    const rr = (1.0*v[6] + 1.2*v[7]) / sum;
+
+    const gamma = 0.65;
+    return rgb01ToHex(Math.pow(rr, gamma), Math.pow(g, gamma), Math.pow(b, gamma));
+  }
+
   function renderLatest(r){
     document.getElementById("mix-sw").style.background = r.mixturehex || "#ffffff";
+    document.getElementById("sen-sw").style.background = r.sensorhex || "#ffffff";
     document.getElementById("sen-I").textContent = (r.sensorintensity !== undefined) ? Math.round(r.sensorintensity) : "—";
     document.getElementById("latest-well").textContent = r.well || "—";
   }
@@ -226,7 +244,7 @@ print("Designed", len(experimentdesign), "experiments")</textarea>
     const tbody = document.getElementById("tbody");
     tbody.innerHTML = "";
     if (!results || !results.length){
-      tbody.innerHTML = `<tr><td colspan="15" style="padding:18px;color:var(--muted)">No results yet.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="16" style="padding:18px;color:var(--muted)">No results yet.</td></tr>`;
       return;
     }
     for (let i=0;i<results.length;i++){
@@ -239,6 +257,7 @@ print("Designed", len(experimentdesign), "experiments")</textarea>
         <td>${r.Yellow}</td>
         <td>${r.Blue}</td>
         <td><span class="swatch" style="background:${r.mixturehex}"></span></td>
+        <td><span class="swatch" style="background:${r.sensorhex}"></span></td>
         <td>${(r.sensorintensity !== undefined) ? Math.round(r.sensorintensity) : ""}</td>
         <td>${r.ch410}</td><td>${r.ch440}</td><td>${r.ch470}</td><td>${r.ch510}</td>
         <td>${r.ch550}</td><td>${r.ch583}</td><td>${r.ch620}</td><td>${r.ch670}</td>
@@ -252,7 +271,7 @@ print("Designed", len(experimentdesign), "experiments")</textarea>
 
   async function initPyodideOnce(){
     setStatus("Initializing Pyodide… (first load can take a bit)", "");
-    const pyodide = await loadPyodide();
+    const pyodide = await loadPyodide(); // Pyodide quickstart pattern [page:96]
     setStatus("Loading Python packages (numpy, pandas)…", "");
     await pyodide.loadPackage(["numpy", "pandas"]);
     setStatus("Loading lab code…", "");
@@ -286,11 +305,13 @@ results = df.to_dict(orient="records")
 `);
 
       const results = pyodide.globals.get("results").toJs();
+
       for (const r of results){
         r.mixturehex = mixtureHex(Number(r.Red), Number(r.Yellow), Number(r.Blue));
         r.sensorintensity =
           Number(r.ch410)+Number(r.ch440)+Number(r.ch470)+Number(r.ch510)+
           Number(r.ch550)+Number(r.ch583)+Number(r.ch620)+Number(r.ch670);
+        r.sensorhex = sensorToHex(r);
       }
 
       renderTable(results);
@@ -343,6 +364,7 @@ print("Designed", len(experimentdesign), "experiments")`;
     if (confirm("Clear the script?")) document.getElementById("code").value = "";
   });
 
+  // Start initialization in background
   getPyodide();
 </script>
 </body>
