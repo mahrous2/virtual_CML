@@ -6,11 +6,11 @@
   <title>Virtual Color Mixing Lab (No Server)</title>
 
   <!-- Pyodide CDN (official quickstart) -->
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.28.0/full/pyodide.js"></script> <!-- [page:45] -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.28.0/full/pyodide.js"></script>
 
   <style>
     :root{
-      --bg1:#f8faf9; --bg2:#f1f5f4; --ink:#1a202c; --muted:#64748b;
+      --bg1:#f8faf9; --bg2:#f1f5f4--ink:#1a202c; --muted:#64748b;
       --card:#ffffff; --line:#e2e8f0; --accent:#10b981; --accent2:#059669;
       --shadow:0 25px 60px rgba(0,0,0,.08); --r:20px; --r-sm:12px;
     }
@@ -41,6 +41,20 @@
       -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
     }
     .subtitle{margin-top:8px; color:var(--muted); font-size:15px; line-height:1.5; max-width:950px; font-weight:500;}
+
+    /* Documentation button styling (matches documentation.html) */
+    .doc-cta{margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;}
+    .doc-btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding:10px 16px; border-radius:999px; text-decoration:none; font-weight:800; font-size:14px;
+      border:1px solid rgba(16,185,129,.35);
+      background:linear-gradient(135deg, rgba(16,185,129,.14), rgba(5,150,105,.10));
+      color:#065f46;
+      transition: all .2s ease;
+    }
+    .doc-btn:hover{transform:translateY(-1px);}
+    .doc-btn:focus{outline:2px solid rgba(16,185,129,.35); outline-offset:2px;}
+
     .layout{display:grid; grid-template-columns:1fr 1fr; gap:24px; padding:24px;}
     @media (max-width:1200px){.layout{grid-template-columns:1fr}}
     .card{background:var(--card); border:1px solid var(--line); border-radius:var(--r); overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,.05);}
@@ -104,13 +118,14 @@
         <div style="width:100%">
           <h1>Virtual Color Mixing Lab</h1>
           <div class="subtitle">
-            No-server version: runs Python in your browser with Pyodide  
+            No-server version: runs Python in your browser with Pyodide
           </div>
         </div>
       </div>
+
       <div class="doc-cta">
-  <a class="doc-btn" href="./documentation.html">Documentation</a>
-</div>
+        <a class="doc-btn" href="./documentation.html">Documentation</a>
+      </div>
     </header>
 
     <div class="layout">
@@ -168,7 +183,7 @@ print("Designed", len(experimentdesign), "experiments")</textarea>
           </div>
 
           <div class="hint">
-            Tip: This version does not use Flask. It runs your experimentdesign Python directly in Pyodide. <!-- [page:45] -->
+            Tip: This version does not use Flask. It runs your experimentdesign Python directly in Pyodide.
           </div>
         </div>
       </section>
@@ -233,12 +248,11 @@ print("Designed", len(experimentdesign), "experiments")</textarea>
     renderLatest(results[results.length - 1]);
   }
 
-  // Pyodide init (official usage: load pyodide.js then await loadPyodide()) [page:45]
   let pyodideReadyPromise = null;
 
   async function initPyodideOnce(){
     setStatus("Initializing Pyodide… (first load can take a bit)", "");
-    const pyodide = await loadPyodide(); // [page:45]
+    const pyodide = await loadPyodide();
     setStatus("Loading Python packages (numpy, pandas)…", "");
     await pyodide.loadPackage(["numpy", "pandas"]);
     setStatus("Loading lab code…", "");
@@ -264,17 +278,14 @@ lab = VirtualColorMixingLab(randomseed=42, systematicnoiselevel=0.10, randomnois
       const pyodide = await getPyodide();
       const userCode = document.getElementById("code").value;
 
-      // Execute user python; must define experimentdesign
       pyodide.runPython(userCode);
 
-      // Run batch using the lab
       pyodide.runPython(`
 df = lab.run_experiment_batch(experimentdesign)
 results = df.to_dict(orient="records")
 `);
 
-      const results = pyodide.globals.get("results").toJs(); // [page:45]
-      // add mixture swatches + intensity (computed from channels)
+      const results = pyodide.globals.get("results").toJs();
       for (const r of results){
         r.mixturehex = mixtureHex(Number(r.Red), Number(r.Yellow), Number(r.Blue));
         r.sensorintensity =
@@ -332,9 +343,7 @@ print("Designed", len(experimentdesign), "experiments")`;
     if (confirm("Clear the script?")) document.getElementById("code").value = "";
   });
 
-  // Start initialization in background
   getPyodide();
 </script>
 </body>
 </html>
-
