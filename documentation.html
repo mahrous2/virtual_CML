@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Virtual Color Mixing Lab — Documentation</title>
+
+  <style>
+    :root{
+      --bg1:#f8faf9; --bg2:#f1f5f4; --ink:#1a202c; --muted:#64748b;
+      --card:#ffffff; --line:#e2e8f0; --accent:#10b981; --accent2:#059669;
+      --shadow:0 25px 60px rgba(0,0,0,.08); --r:20px; --r-sm:12px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(900px 600px at 15% 10%, rgba(16,185,129,.08), transparent 55%),
+        radial-gradient(900px 600px at 90% 15%, rgba(5,150,105,.06), transparent 55%),
+        linear-gradient(160deg,var(--bg1),var(--bg2));
+      min-height:100vh; padding:32px;
+    }
+    .shell{
+      max-width:1100px; margin:0 auto; background:var(--card);
+      border:1px solid var(--line); border-radius:calc(var(--r) + 8px);
+      box-shadow:var(--shadow); overflow:hidden;
+    }
+    header{
+      padding:26px 36px; border-bottom:1px solid var(--line);
+      background:linear-gradient(135deg, rgba(16,185,129,.06), rgba(5,150,105,.04)),
+                 linear-gradient(0deg, rgba(255,255,255,.85), rgba(255,255,255,.85));
+    }
+    h1{
+      margin:0; font-size:30px; font-weight:850; letter-spacing:-.02em;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .subtitle{margin-top:10px; color:var(--muted); font-size:15px; line-height:1.6; font-weight:600;}
+    .topbar{margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding:10px 16px; border-radius:999px; text-decoration:none; font-weight:800; font-size:14px;
+      border:1px solid rgba(16,185,129,.35);
+      background:linear-gradient(135deg, rgba(16,185,129,.14), rgba(5,150,105,.10));
+      color:#065f46;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .layout{display:grid; grid-template-columns: 280px 1fr; gap:22px; padding:22px;}
+    @media (max-width: 980px){ .layout{grid-template-columns:1fr} }
+    .card{border:1px solid var(--line); background:var(--bg1); border-radius:var(--r); overflow:hidden;}
+    .toc{padding:18px;}
+    .toc h2{margin:0 0 10px; font-size:16px;}
+    .toc a{display:block; padding:8px 10px; border-radius:10px; color:var(--ink); text-decoration:none; font-weight:650;}
+    .toc a:hover{background:rgba(16,185,129,.10)}
+    .content{padding:18px 18px 24px; background:var(--card);}
+    h2{margin:22px 0 10px; font-size:20px;}
+    h3{margin:18px 0 8px; font-size:16px;}
+    p{margin:8px 0; line-height:1.65; color:#243041;}
+    code, pre{
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+    }
+    pre{
+      background:linear-gradient(180deg,#0b1220,#0a0f1a);
+      color:#e5e7eb;
+      border-radius:14px;
+      padding:14px 14px;
+      overflow:auto;
+      border:1px solid rgba(226,232,240,.18);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .pill{
+      display:inline-block; padding:2px 10px; border-radius:999px;
+      background:rgba(16,185,129,.10); border:1px solid rgba(16,185,129,.18);
+      color:#065f46; font-weight:800; font-size:12px;
+    }
+    .warn{
+      border:1px solid rgba(239,68,68,.25);
+      background:rgba(239,68,68,.06);
+      color:#7f1d1d;
+      border-radius:14px;
+      padding:12px 14px;
+      margin-top:10px;
+      font-weight:650;
+      line-height:1.55;
+    }
+    .note{
+      border:1px solid rgba(59,130,246,.22);
+      background:rgba(59,130,246,.06);
+      color:#1e3a8a;
+      border-radius:14px;
+      padding:12px 14px;
+      margin-top:10px;
+      font-weight:650;
+      line-height:1.55;
+    }
+    .footer{
+      padding:18px 22px;
+      border-top:1px solid var(--line);
+      color:var(--muted);
+      font-size:13px;
+      background:var(--bg1);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="shell">
+    <header>
+      <h1>Virtual Color Mixing Lab — Documentation</h1>
+      <div class="subtitle">
+        This page explains how the app works, the expected input format, and how to interpret the results.
+      </div>
+      <div class="topbar">
+        <a class="btn" href="./index.html">Back to app</a>
+        <a class="btn" href="#quickstart">Quickstart</a>
+        <a class="btn" href="#input">Input format</a>
+        <a class="btn" href="#results">Results</a>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="card toc">
+        <h2>Contents</h2>
+        <a href="#overview">Overview</a>
+        <a href="#quickstart">Quickstart</a>
+        <a href="#input">Experiment design input</a>
+        <a href="#doe">DOE example</a>
+        <a href="#backend">Simulation model</a>
+        <a href="#results">Results columns</a>
+        <a href="#csv">CSV export</a>
+        <a href="#troubleshooting">Troubleshooting</a>
+      </aside>
+
+      <main class="card content">
+        <section id="overview">
+          <h2>Overview</h2>
+          <p>
+            <span class="pill">No server</span> This app runs Python in your browser using Pyodide, so it can be hosted on GitHub Pages.
+          </p>
+          <p>
+            You write Python in the editor to define <code>experimentdesign</code>, then the app simulates pipetting + an 8-channel spectral sensor response and displays a table of results.
+          </p>
+          <div class="note">
+            Because everything runs locally in your browser, reloading the page resets the session and clears stored results.
+          </div>
+        </section>
+
+        <section id="quickstart">
+          <h2>Quickstart</h2>
+          <ol>
+            <li>Open the app and wait until the status says “Ready”.</li>
+            <li>Edit the Python in the textbox to create <code>experimentdesign</code>.</li>
+            <li>Click <b>Run</b>.</li>
+            <li>Review the “Results” table and download CSV if needed.</li>
+          </ol>
+
+          <h3>Minimal example</h3>
+          <pre><code># One experiment
+experimentdesign = [{"R": 298, "Y": 1, "B": 1, "well": "A1"}]
+print("Designed", len(experimentdesign), "experiments")</code></pre>
+        </section>
+
+        <section id="input">
+          <h2>Experiment design input</h2>
+          <p>
+            Your script must define a variable named <code>experimentdesign</code> as a <b>list</b> of dictionaries.
+          </p>
+
+          <h3>Required keys per experiment</h3>
+          <p>
+            Each dictionary should contain: <code>R</code>, <code>Y</code>, <code>B</code> (volumes in µL). You may optionally include <code>well</code>.
+          </p>
+
+          <h3>Constraints</h3>
+          <ul>
+            <li>Each of R/Y/B must be between 1 and 300 µL.</li>
+            <li>Total volume (R+Y+B) must be ≤ 300 µL.</li>
+          </ul>
+
+          <h3>Auto-assigned wells</h3>
+          <p>
+            If you omit <code>well</code>, the app assigns wells sequentially (A1, A2, …) in an 8×12 plate.
+          </p>
+
+          <div class="warn">
+            The code in the textbox is executed as Python in the browser. Only run scripts you trust.
+          </div>
+        </section>
+
+        <section id="doe">
+          <h2>DOE example</h2>
+          <p>
+            The “Load DOE” button inserts a sample design that sweeps volumes and keeps total volume at 300 µL.
+          </p>
+          <pre><code># DOE: 24 mixtures
+experimentdesign = []
+for i in range(24):
+    R = 10 + (i % 6) * 20
+    Y = 10 + (i // 6) * 4 * 30
+    B = 300 - R - Y
+    if B &lt; 1:
+        continue
+    experimentdesign.append({"R": R, "Y": Y, "B": B})
+print("Designed", len(experimentdesign), "experiments")</code></pre>
+        </section>
+
+        <section id="backend">
+          <h2>Simulation model (backend)</h2>
+          <p>
+            The backend is a Python module (loaded by the page) that defines <code>VirtualColorMixingLab</code>.
+          </p>
+
+          <h3>What is simulated?</h3>
+          <ul>
+            <li>Pipetting error: each target volume is perturbed by a random error model.</li>
+            <li>Optical attenuation: each channel count is computed from baseline intensity and dye absorption using an exponential Beer–Lambert style relationship.</li>
+            <li>Well bias + random noise: systematic per-well factor plus random multiplicative noise.</li>
+          </ul>
+
+          <h3>Why “native” and “legacy” channels?</h3>
+          <p>
+            Internally the model uses “native” channels (e.g., ch415, ch445, …) but returns “legacy” channel names (ch410, ch440, …) to match the UI table.
+          </p>
+        </section>
+
+        <section id="results">
+          <h2>Results columns</h2>
+          <p>
+            Each row corresponds to one experiment and includes volumes, a well position, and 8 sensor channels:
+            <code>ch410</code>, <code>ch440</code>, <code>ch470</code>, <code>ch510</code>, <code>ch550</code>, <code>ch583</code>, <code>ch620</code>, <code>ch670</code>.
+          </p>
+
+          <h3>Mixture swatch</h3>
+          <p>
+            The “Mix” swatch is a simple RGB weighted blend of three fixed primary colors (red/yellow/blue) based on volumes.
+          </p>
+
+          <h3>Intensity</h3>
+          <p>
+            “Intensity” is computed as the sum of the 8 channel counts (a quick brightness proxy).
+          </p>
+        </section>
+
+        <section id="csv">
+          <h2>CSV export</h2>
+          <p>
+            Clicking “Download CSV” exports the current session’s stored results log as CSV.
+          </p>
+          <p>
+            If you reload the page, the in-browser Python session resets and previous results are lost.
+          </p>
+        </section>
+
+        <section id="troubleshooting">
+          <h2>Troubleshooting</h2>
+
+          <h3>Stuck on “Initializing Pyodide…”</h3>
+          <ul>
+            <li>First load can be slow (Pyodide runtime + packages).</li>
+            <li>Try a hard refresh and check your browser console for network errors.</li>
+          </ul>
+
+          <h3>“Execution error: … experimentdesign not defined”</h3>
+          <p>
+            Your script must set <code>experimentdesign = [...]</code> at the top level (not inside a function).
+          </p>
+
+          <h3>Volumes rejected</h3>
+          <p>
+            Ensure each of R/Y/B is within 1..300 and R+Y+B ≤ 300.
+          </p>
+        </section>
+      </main>
+    </div>
+
+    <div class="footer">
+      Virtual Color Mixing Lab • Hosted on GitHub Pages • Python executed in-browser via Pyodide.
+    </div>
+  </div>
+</body>
+</html>
