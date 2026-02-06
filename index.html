@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Virtual Color Mixing Lab (No Server)</title>
 
-  <!-- Pyodide CDN (official quickstart) -->
+  <!-- Pyodide CDN -->
   <script src="https://cdn.jsdelivr.net/pyodide/v0.28.0/full/pyodide.js"></script>
 
   <style>
@@ -42,10 +42,8 @@
     }
     .subtitle{margin-top:8px; color:var(--muted); font-size:15px; line-height:1.5; max-width:950px; font-weight:500;}
 
-    /* Top buttons */
     .doc-cta{margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;}
-    .doc-btn,
-    .toggle-btn{
+    .doc-btn{
       display:inline-flex; align-items:center; justify-content:center; gap:10px;
       padding:10px 16px; border-radius:999px; text-decoration:none; font-weight:800; font-size:14px;
       border:1px solid rgba(16,185,129,.35);
@@ -53,9 +51,20 @@
       color:#065f46;
       transition: all .2s ease;
     }
-    .doc-btn:hover,.toggle-btn:hover{transform:translateY(-1px);}
-    .doc-btn:focus,.toggle-btn:focus{outline:2px solid rgba(16,185,129,.35); outline-offset:2px;}
-    .toggle-btn{cursor:pointer;}
+    .doc-btn:hover{transform:translateY(-1px);}
+    .doc-btn:focus{outline:2px solid rgba(16,185,129,.35); outline-offset:2px;}
+
+    .toggle-btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding:10px 16px; border-radius:999px; text-decoration:none; font-weight:800; font-size:14px;
+      border:1px solid rgba(16,185,129,.35);
+      background:linear-gradient(135deg, rgba(16,185,129,.14), rgba(5,150,105,.10));
+      color:#065f46;
+      transition: all .2s ease;
+      cursor:pointer;
+    }
+    .toggle-btn:hover{transform:translateY(-1px);}
+    .toggle-btn:focus{outline:2px solid rgba(16,185,129,.35); outline-offset:2px;}
 
     .layout{display:grid; grid-template-columns:1fr 1fr; gap:24px; padding:24px;}
     @media (max-width:1200px){.layout{grid-template-columns:1fr}}
@@ -73,6 +82,7 @@
       box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 10px 30px rgba(0,0,0,.10);
     }
     textarea:focus{outline:2px solid rgba(16,185,129,.35); outline-offset:2px;}
+
     .controls{display:flex; gap:12px; flex-wrap:wrap; margin-top:16px;}
     button{
       appearance:none; border:none; padding:12px 20px; border-radius:var(--r-sm);
@@ -116,13 +126,13 @@
     tbody tr:nth-child(even){background:rgba(248,250,249,.8);}
     .hint{font-size:13px; color:var(--muted); margin-top:16px; line-height:1.6; font-weight:650;}
 
-    /* --- Flip UI (simple vs advanced) --- */
+    /* --- Flip UI --- */
     .flip-wrap{perspective:1200px; margin-top:16px;}
     .flip-card{
       position:relative;
       transform-style:preserve-3d;
       transition:transform .7s cubic-bezier(.2,.8,.2,1);
-      min-height:560px; /* keeps card height stable while flipping */
+      min-height:560px;
     }
     .flip-card.is-flipped{transform:rotateY(180deg);}
     .flip-face{
@@ -135,7 +145,6 @@
       transform:rotateY(180deg);
     }
 
-    /* Simple form */
     .form-grid{
       display:grid;
       grid-template-columns:repeat(2, minmax(0,1fr));
@@ -190,7 +199,6 @@
 
       <div class="doc-cta">
         <a class="doc-btn" href="./documentation.html">Documentation</a>
-        <button class="toggle-btn" id="btn-toggle-ui" type="button">Switch to Simple UI</button>
       </div>
     </header>
 
@@ -204,93 +212,23 @@
 
           <div class="flip-wrap">
             <div class="flip-card" id="ui-flip">
-
-              <!-- FRONT: Advanced (code) -->
+              <!-- FRONT: Advanced -->
               <div class="flip-face flip-front">
-                <textarea id="code"># =========================
-# User settings (edit these)
-# =========================
-n_samples = 24
-mode = "grid"          # "random" or "grid"
-
-# Volume rules (µL)
-total_volume = 300
-R_min, R_max = 10, 250
-Y_min, Y_max = 10, 250
-step = 10
-
-# Random settings
-seed = 1
-
-# Optional: add wells yourself or let the app auto-assign
-use_wells = False
-
-
-# =========================
-# Helper functions
-# =========================
-def valid(R, Y, B):
-    return (1 <= R <= 300) and (1 <= Y <= 300) and (1 <= B <= 300) and (R + Y + B <= 300)
-
-def make_well(i):
-    row = i // 12
-    col = i % 12 + 1
-    return f"{chr(65 + row)}{col}"
-
-
-# =========================
-# Build experimentdesign
-# =========================
-experimentdesign = []
-
-if mode == "random":
-    import random
-    random.seed(seed)
-
-    attempts = 0
-    while len(experimentdesign) < n_samples:
-        attempts += 1
-        if attempts > 20000:
-            raise RuntimeError("Could not generate enough valid samples. Loosen bounds or reduce n_samples.")
-        R = random.randrange(R_min, R_max + 1, step)
-        Y = random.randrange(Y_min, Y_max + 1, step)
-        B = total_volume - R - Y
-        if not valid(R, Y, B):
-            continue
-        exp = {"R": R, "Y": Y, "B": B}
-        if use_wells:
-            exp["well"] = make_well(len(experimentdesign))
-        experimentdesign.append(exp)
-
-elif mode == "grid":
-    for R in range(R_min, R_max + 1, step):
-        for Y in range(Y_min, Y_max + 1, step):
-            B = total_volume - R - Y
-            if not valid(R, Y, B):
-                continue
-            exp = {"R": R, "Y": Y, "B": B}
-            if use_wells:
-                exp["well"] = make_well(len(experimentdesign))
-            experimentdesign.append(exp)
-            if len(experimentdesign) >= n_samples:
-                break
-        if len(experimentdesign) >= n_samples:
-            break
-else:
-    raise ValueError('mode must be "random" or "grid"')
-
+                <textarea id="code"># One experiment example:
+experimentdesign = [{"R": 298, "Y": 1, "B": 1, "well": "A1"}]
 print("Designed", len(experimentdesign), "experiments")</textarea>
 
                 <div class="controls">
                   <button class="primary" id="btn-run" type="button">Run</button>
                   <button class="secondary" id="btn-doe" type="button">Load template</button>
                   <button class="secondary" id="btn-clear" type="button">Clear</button>
+                  <button class="toggle-btn" id="btn-toggle-ui" type="button">Switch to Simple UI</button>
                 </div>
 
                 <div class="console" id="console">Ready.</div>
               </div>
 
-              <!-- BACK: Simple UI (form) -->
+              <!-- BACK: Simple -->
               <div class="flip-face flip-back">
                 <div class="form-grid">
                   <div class="field">
@@ -334,11 +272,11 @@ print("Designed", len(experimentdesign), "experiments")</textarea>
                 <div class="controls">
                   <button class="primary" id="btn-run-simple" type="button">Run</button>
                   <button class="secondary" id="btn-fill-from-total" type="button">Set R=Y=B</button>
+                  <button class="toggle-btn" id="btn-toggle-ui-2" type="button">Switch to Advanced (Code)</button>
                 </div>
 
                 <div class="console" id="console-simple" style="margin-top:16px;">Fill the boxes then click Run.</div>
               </div>
-
             </div>
           </div>
         </div>
@@ -494,8 +432,8 @@ lab = VirtualColorMixingLab(randomseed=42, systematicnoiselevel=0.10, randomnois
     const card = document.getElementById("ui-flip");
     card.classList.toggle("is-flipped", isSimpleUI);
 
-    const btn = document.getElementById("btn-toggle-ui");
-    btn.textContent = isSimpleUI ? "Switch to Advanced (Code)" : "Switch to Simple UI";
+    document.getElementById("btn-toggle-ui").textContent = isSimpleUI ? "Switch to Advanced (Code)" : "Switch to Simple UI";
+    document.getElementById("btn-toggle-ui-2").textContent = isSimpleUI ? "Switch to Advanced (Code)" : "Switch to Simple UI";
   }
 
   function buildExperimentdesignFromSimpleUI(){
@@ -535,10 +473,11 @@ lab = VirtualColorMixingLab(randomseed=42, systematicnoiselevel=0.10, randomnois
     try{
       const pyodide = await getPyodide();
 
-      // Push design directly into Python without exec()
-      pyodide.globals.set("experimentdesign", experimentdesign);
+      // Convert JS objects -> real Python dicts so exp.get(...) works
+      pyodide.globals.set("experimentdesign_js", experimentdesign);
 
       pyodide.runPython(`
+experimentdesign = [dict(x) for x in experimentdesign_js]
 df = lab.run_experiment_batch(experimentdesign)
 results = df.to_dict(orient="records")
 `);
@@ -564,7 +503,7 @@ results = df.to_dict(orient="records")
     }
   }
 
-  /* -------- Advanced (code box) runner -------- */
+  /* -------- Advanced runner -------- */
   async function runBatch(){
     setConsole("Running…");
     try{
@@ -573,8 +512,23 @@ results = df.to_dict(orient="records")
 
       pyodide.runPython(userCode);
 
-      const exp = pyodide.globals.get("experimentdesign").toJs();
-      await runBatchFromExperimentdesign(exp);
+      pyodide.runPython(`
+df = lab.run_experiment_batch(experimentdesign)
+results = df.to_dict(orient="records")
+`);
+      const results = pyodide.globals.get("results").toJs();
+
+      for (const r of results){
+        r.mixturehex = mixtureHex(Number(r.Red), Number(r.Yellow), Number(r.Blue));
+        r.sensorintensity =
+          Number(r.ch410)+Number(r.ch440)+Number(r.ch470)+Number(r.ch510)+
+          Number(r.ch550)+Number(r.ch583)+Number(r.ch620)+Number(r.ch670);
+        r.sensorhex = sensorToHex(r);
+      }
+
+      renderTable(results);
+      setConsole("Done.");
+      setStatus(`Executed ${results.length} experiments.`, "ok");
     } catch(e){
       setConsole(String(e));
       setStatus("Execution error: " + e, "err");
@@ -602,9 +556,8 @@ results = df.to_dict(orient="records")
   }
 
   /* -------- Event listeners -------- */
-  document.getElementById("btn-toggle-ui").addEventListener("click", () => {
-    setUIMode(!isSimpleUI);
-  });
+  document.getElementById("btn-toggle-ui").addEventListener("click", () => setUIMode(!isSimpleUI));
+  document.getElementById("btn-toggle-ui-2").addEventListener("click", () => setUIMode(!isSimpleUI));
 
   document.getElementById("btn-run").addEventListener("click", runBatch);
 
