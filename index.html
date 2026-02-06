@@ -42,9 +42,10 @@
     }
     .subtitle{margin-top:8px; color:var(--muted); font-size:15px; line-height:1.5; max-width:950px; font-weight:500;}
 
-    /* Documentation button styling (matches documentation.html) */
+    /* Top buttons */
     .doc-cta{margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;}
-    .doc-btn{
+    .doc-btn,
+    .toggle-btn{
       display:inline-flex; align-items:center; justify-content:center; gap:10px;
       padding:10px 16px; border-radius:999px; text-decoration:none; font-weight:800; font-size:14px;
       border:1px solid rgba(16,185,129,.35);
@@ -52,8 +53,9 @@
       color:#065f46;
       transition: all .2s ease;
     }
-    .doc-btn:hover{transform:translateY(-1px);}
-    .doc-btn:focus{outline:2px solid rgba(16,185,129,.35); outline-offset:2px;}
+    .doc-btn:hover,.toggle-btn:hover{transform:translateY(-1px);}
+    .doc-btn:focus,.toggle-btn:focus{outline:2px solid rgba(16,185,129,.35); outline-offset:2px;}
+    .toggle-btn{cursor:pointer;}
 
     .layout{display:grid; grid-template-columns:1fr 1fr; gap:24px; padding:24px;}
     @media (max-width:1200px){.layout{grid-template-columns:1fr}}
@@ -63,6 +65,7 @@
     .body{padding:24px;}
     .rules{background:var(--bg2); border:1px solid var(--line); border-radius:var(--r-sm); padding:16px 18px; color:var(--muted); font-size:14px; line-height:1.6; font-weight:600;}
     .rules code{background:var(--line); padding:2px 6px; border-radius:4px; font-size:13px;}
+
     textarea{
       width:100%; min-height:440px; resize:vertical; border:1px solid rgba(226,232,240,.25);
       border-radius:var(--r-sm); padding:16px; font-family: ui-monospace, Menlo, Consolas, monospace;
@@ -79,12 +82,14 @@
     .primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; box-shadow:0 8px 24px rgba(16,185,129,.3);}
     .primary:hover{box-shadow:0 12px 32px rgba(16,185,129,.4); transform:translateY(-2px);}
     .secondary{background:var(--bg2); color:var(--ink); border:1px solid var(--line);}
+
     .status{
       border-radius:var(--r-sm); border:1px solid var(--line); background:var(--bg1);
       padding:14px 16px; color:var(--muted); font-size:14px; line-height:1.5; margin-bottom:16px; font-weight:650;
     }
     .status.ok{background:rgba(16,185,129,.08); border-color:rgba(16,185,129,.25); color:#065f46;}
     .status.err{background:rgba(239,68,68,.08); border-color:rgba(239,68,68,.25); color:#b91c1c;}
+
     .grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
     @media (max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}}
     .tile{
@@ -94,11 +99,13 @@
     .name{font-size:13px; color:var(--muted); font-weight:700; margin-bottom:6px;}
     .value{font-size:20px; font-weight:850; letter-spacing:-.02em;}
     .swatch{width:32px; height:24px; border-radius:8px; border:1px solid rgba(0,0,0,.1); display:inline-block; vertical-align:middle; box-shadow:0 2px 8px rgba(0,0,0,.15);}
+
     .console{
       margin-top:16px; border-radius:var(--r-sm); border:1px solid var(--line); background:var(--bg1);
       padding:16px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size:13px;
       max-height:240px; overflow:auto; white-space:pre-wrap;
     }
+
     .table-wrap{border-radius:var(--r); border:1px solid var(--line); overflow:auto; max-height:420px; background:var(--bg1);}
     table{width:100%; border-collapse:collapse; font-size:13px;}
     thead th{
@@ -108,6 +115,64 @@
     tbody td{padding:12px 12px; border-bottom:1px solid var(--line); white-space:nowrap;}
     tbody tr:nth-child(even){background:rgba(248,250,249,.8);}
     .hint{font-size:13px; color:var(--muted); margin-top:16px; line-height:1.6; font-weight:650;}
+
+    /* --- Flip UI (simple vs advanced) --- */
+    .flip-wrap{perspective:1200px; margin-top:16px;}
+    .flip-card{
+      position:relative;
+      transform-style:preserve-3d;
+      transition:transform .7s cubic-bezier(.2,.8,.2,1);
+      min-height:560px; /* keeps card height stable while flipping */
+    }
+    .flip-card.is-flipped{transform:rotateY(180deg);}
+    .flip-face{
+      backface-visibility:hidden;
+      -webkit-backface-visibility:hidden;
+    }
+    .flip-back{
+      position:absolute;
+      inset:0;
+      transform:rotateY(180deg);
+    }
+
+    /* Simple form */
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    @media (max-width:700px){ .form-grid{grid-template-columns:1fr;} }
+
+    .field{
+      border:1px solid var(--line);
+      background:var(--bg1);
+      border-radius:var(--r-sm);
+      padding:12px 12px;
+    }
+    .field label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      margin-bottom:6px;
+    }
+    .field input, .field select{
+      width:100%;
+      padding:10px 10px;
+      border-radius:10px;
+      border:1px solid rgba(226,232,240,.7);
+      background:white;
+      font-weight:750;
+      font-size:14px;
+    }
+    .small-note{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+      font-weight:650;
+    }
   </style>
 </head>
 
@@ -125,6 +190,7 @@
 
       <div class="doc-cta">
         <a class="doc-btn" href="./documentation.html">Documentation</a>
+        <button class="toggle-btn" id="btn-toggle-ui" type="button">Switch to Simple UI</button>
       </div>
     </header>
 
@@ -133,20 +199,148 @@
         <div class="head"><h2>Experiment Design</h2></div>
         <div class="body">
           <div class="rules">
-            Define <code>experimentdesign</code> as a list of dicts. Each dict must include <code>R</code>, <code>Y</code>, <code>B</code>, and optional <code>well</code>.
+            Choose Simple UI (forms) or Advanced (Python code). Both generate <code>experimentdesign</code> as a list of dicts.
           </div>
 
-          <textarea id="code"># One experiment example:
-experimentdesign = [{"R": 298, "Y": 1, "B": 1, "well": "A1"}]
+          <div class="flip-wrap">
+            <div class="flip-card" id="ui-flip">
+
+              <!-- FRONT: Advanced (code) -->
+              <div class="flip-face flip-front">
+                <textarea id="code"># =========================
+# User settings (edit these)
+# =========================
+n_samples = 24
+mode = "grid"          # "random" or "grid"
+
+# Volume rules (µL)
+total_volume = 300
+R_min, R_max = 10, 250
+Y_min, Y_max = 10, 250
+step = 10
+
+# Random settings
+seed = 1
+
+# Optional: add wells yourself or let the app auto-assign
+use_wells = False
+
+
+# =========================
+# Helper functions
+# =========================
+def valid(R, Y, B):
+    return (1 <= R <= 300) and (1 <= Y <= 300) and (1 <= B <= 300) and (R + Y + B <= 300)
+
+def make_well(i):
+    row = i // 12
+    col = i % 12 + 1
+    return f"{chr(65 + row)}{col}"
+
+
+# =========================
+# Build experimentdesign
+# =========================
+experimentdesign = []
+
+if mode == "random":
+    import random
+    random.seed(seed)
+
+    attempts = 0
+    while len(experimentdesign) < n_samples:
+        attempts += 1
+        if attempts > 20000:
+            raise RuntimeError("Could not generate enough valid samples. Loosen bounds or reduce n_samples.")
+        R = random.randrange(R_min, R_max + 1, step)
+        Y = random.randrange(Y_min, Y_max + 1, step)
+        B = total_volume - R - Y
+        if not valid(R, Y, B):
+            continue
+        exp = {"R": R, "Y": Y, "B": B}
+        if use_wells:
+            exp["well"] = make_well(len(experimentdesign))
+        experimentdesign.append(exp)
+
+elif mode == "grid":
+    for R in range(R_min, R_max + 1, step):
+        for Y in range(Y_min, Y_max + 1, step):
+            B = total_volume - R - Y
+            if not valid(R, Y, B):
+                continue
+            exp = {"R": R, "Y": Y, "B": B}
+            if use_wells:
+                exp["well"] = make_well(len(experimentdesign))
+            experimentdesign.append(exp)
+            if len(experimentdesign) >= n_samples:
+                break
+        if len(experimentdesign) >= n_samples:
+            break
+else:
+    raise ValueError('mode must be "random" or "grid"')
+
 print("Designed", len(experimentdesign), "experiments")</textarea>
 
-          <div class="controls">
-            <button class="primary" id="btn-run">Run</button>
-            <button class="secondary" id="btn-doe">Load DOE</button>
-            <button class="secondary" id="btn-clear">Clear</button>
-          </div>
+                <div class="controls">
+                  <button class="primary" id="btn-run" type="button">Run</button>
+                  <button class="secondary" id="btn-doe" type="button">Load template</button>
+                  <button class="secondary" id="btn-clear" type="button">Clear</button>
+                </div>
 
-          <div class="console" id="console">Ready.</div>
+                <div class="console" id="console">Ready.</div>
+              </div>
+
+              <!-- BACK: Simple UI (form) -->
+              <div class="flip-face flip-back">
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="simple-n">Number of samples</label>
+                    <input id="simple-n" type="number" min="1" max="96" value="12" />
+                  </div>
+
+                  <div class="field">
+                    <label for="simple-total">Total volume (µL)</label>
+                    <input id="simple-total" type="number" min="3" max="300" value="300" />
+                  </div>
+
+                  <div class="field">
+                    <label for="simple-r">R volume (µL)</label>
+                    <input id="simple-r" type="number" min="1" max="300" value="100" />
+                  </div>
+
+                  <div class="field">
+                    <label for="simple-y">Y volume (µL)</label>
+                    <input id="simple-y" type="number" min="1" max="300" value="100" />
+                  </div>
+
+                  <div class="field">
+                    <label for="simple-b">B volume (µL)</label>
+                    <input id="simple-b" type="number" min="1" max="300" value="100" />
+                  </div>
+
+                  <div class="field">
+                    <label for="simple-mode">How to use volumes</label>
+                    <select id="simple-mode">
+                      <option value="fixed">Fixed (repeat same R/Y/B)</option>
+                      <option value="autoB">R & Y fixed, compute B = total − R − Y</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="small-note">
+                  Tip: Use “AutoB” if you want a constant total volume without manually calculating B.
+                </div>
+
+                <div class="controls">
+                  <button class="primary" id="btn-run-simple" type="button">Run</button>
+                  <button class="secondary" id="btn-fill-from-total" type="button">Set R=Y=B</button>
+                </div>
+
+                <div class="console" id="console-simple" style="margin-top:16px;">Fill the boxes then click Run.</div>
+              </div>
+
+            </div>
+          </div>
         </div>
       </section>
 
@@ -179,11 +373,11 @@ print("Designed", len(experimentdesign), "experiments")</textarea>
           </div>
 
           <div class="controls" style="margin-top:20px">
-            <button class="primary" id="btn-csv">Download CSV</button>
+            <button class="primary" id="btn-csv" type="button">Download CSV</button>
           </div>
 
           <div class="hint">
-            Tip: This version does not use Flask. It runs your experimentdesign Python directly in Pyodide.
+            Tip: Simple UI avoids Python editing; Advanced mode gives full control.
           </div>
         </div>
       </section>
@@ -197,6 +391,7 @@ print("Designed", len(experimentdesign), "experiments")</textarea>
     el.className = "status" + (kind ? " " + kind : "");
   }
   function setConsole(t) { document.getElementById("console").textContent = t; }
+  function setConsoleSimple(t) { document.getElementById("console-simple").textContent = t; }
 
   function clamp01(x){ return Math.max(0, Math.min(1, x)); }
   function rgb01ToHex(r,g,b){
@@ -224,7 +419,6 @@ print("Designed", len(experimentdesign), "experiments")</textarea>
     ];
     const sum = v.reduce((a,b)=>a+b, 0) || 1;
 
-    // Approximate RGB from 8 bands (simple, fast, visually useful).
     const b = (v[0] + 1.2*v[1] + 0.9*v[2]) / sum;
     const g = (1.0*v[3] + 1.2*v[4] + 0.6*v[5]) / sum;
     const rr = (1.0*v[6] + 1.2*v[7]) / sum;
@@ -267,11 +461,12 @@ print("Designed", len(experimentdesign), "experiments")</textarea>
     renderLatest(results[results.length - 1]);
   }
 
+  /* -------- Pyodide init -------- */
   let pyodideReadyPromise = null;
 
   async function initPyodideOnce(){
     setStatus("Initializing Pyodide… (first load can take a bit)", "");
-    const pyodide = await loadPyodide(); // Pyodide quickstart pattern [page:96]
+    const pyodide = await loadPyodide();
     setStatus("Loading Python packages (numpy, pandas)…", "");
     await pyodide.loadPackage(["numpy", "pandas"]);
     setStatus("Loading lab code…", "");
@@ -291,13 +486,57 @@ lab = VirtualColorMixingLab(randomseed=42, systematicnoiselevel=0.10, randomnois
     return pyodideReadyPromise;
   }
 
-  async function runBatch(){
+  /* -------- UI flip logic -------- */
+  let isSimpleUI = false;
+
+  function setUIMode(simple){
+    isSimpleUI = !!simple;
+    const card = document.getElementById("ui-flip");
+    card.classList.toggle("is-flipped", isSimpleUI);
+
+    const btn = document.getElementById("btn-toggle-ui");
+    btn.textContent = isSimpleUI ? "Switch to Advanced (Code)" : "Switch to Simple UI";
+  }
+
+  function buildExperimentdesignFromSimpleUI(){
+    const n = Number(document.getElementById("simple-n").value);
+    const total = Number(document.getElementById("simple-total").value);
+
+    let R = Number(document.getElementById("simple-r").value);
+    let Y = Number(document.getElementById("simple-y").value);
+    let B = Number(document.getElementById("simple-b").value);
+
+    const mode = document.getElementById("simple-mode").value;
+
+    if (!Number.isFinite(n) || n < 1) throw new Error("Number of samples must be >= 1.");
+    if (!Number.isFinite(total) || total < 3 || total > 300) throw new Error("Total volume must be between 3 and 300 µL.");
+
+    if (mode === "autoB") {
+      B = total - R - Y;
+      document.getElementById("simple-b").value = B;
+    }
+
+    function valid(r,y,b){
+      return (1 <= r && r <= 300) && (1 <= y && y <= 300) && (1 <= b && b <= 300) && (r+y+b <= 300);
+    }
+    if (!valid(R,Y,B)) {
+      throw new Error(`Invalid volumes: R=${R}, Y=${Y}, B=${B}. Need 1..300 each and R+Y+B ≤ 300.`);
+    }
+
+    const out = [];
+    for (let i=0;i<n;i++){
+      out.push({R:R, Y:Y, B:B});
+    }
+    return out;
+  }
+
+  async function runBatchFromExperimentdesign(experimentdesign){
     setConsole("Running…");
     try{
       const pyodide = await getPyodide();
-      const userCode = document.getElementById("code").value;
 
-      pyodide.runPython(userCode);
+      // Push design directly into Python without exec()
+      pyodide.globals.set("experimentdesign", experimentdesign);
 
       pyodide.runPython(`
 df = lab.run_experiment_batch(experimentdesign)
@@ -317,6 +556,25 @@ results = df.to_dict(orient="records")
       renderTable(results);
       setConsole("Done.");
       setStatus(`Executed ${results.length} experiments.`, "ok");
+      return results;
+    } catch(e){
+      setConsole(String(e));
+      setStatus("Execution error: " + e, "err");
+      throw e;
+    }
+  }
+
+  /* -------- Advanced (code box) runner -------- */
+  async function runBatch(){
+    setConsole("Running…");
+    try{
+      const pyodide = await getPyodide();
+      const userCode = document.getElementById("code").value;
+
+      pyodide.runPython(userCode);
+
+      const exp = pyodide.globals.get("experimentdesign").toJs();
+      await runBatchFromExperimentdesign(exp);
     } catch(e){
       setConsole(String(e));
       setStatus("Execution error: " + e, "err");
@@ -343,26 +601,107 @@ results = df.to_dict(orient="records")
     }
   }
 
+  /* -------- Event listeners -------- */
+  document.getElementById("btn-toggle-ui").addEventListener("click", () => {
+    setUIMode(!isSimpleUI);
+  });
+
   document.getElementById("btn-run").addEventListener("click", runBatch);
+
+  document.getElementById("btn-run-simple").addEventListener("click", async () => {
+    try{
+      setConsoleSimple("Building experimentdesign…");
+      const exp = buildExperimentdesignFromSimpleUI();
+      setConsoleSimple(`Designed ${exp.length} experiments. Running…`);
+      await runBatchFromExperimentdesign(exp);
+      setConsoleSimple("Done.");
+    } catch(e){
+      setConsoleSimple(String(e));
+      setStatus("Input error: " + (e.message || e), "err");
+    }
+  });
+
+  document.getElementById("btn-fill-from-total").addEventListener("click", () => {
+    const total = Number(document.getElementById("simple-total").value);
+    const each = Math.floor(total / 3);
+    document.getElementById("simple-r").value = each;
+    document.getElementById("simple-y").value = each;
+    document.getElementById("simple-b").value = total - 2*each;
+    setConsoleSimple("Set R, Y, B to sum to total.");
+  });
+
   document.getElementById("btn-csv").addEventListener("click", downloadCSV);
 
   document.getElementById("btn-doe").addEventListener("click", () => {
     document.getElementById("code").value =
-`# DOE: 24 mixtures
+`# =========================
+# Simple editable template
+# =========================
+n_samples = 60
+mode = "random"          # "random" or "grid"
+total_volume = 300
+
+R_min, R_max = 10, 250
+Y_min, Y_max = 10, 250
+step = 10
+
+seed = 1
+use_wells = False
+
+def valid(R, Y, B):
+    return (1 <= R <= 300) and (1 <= Y <= 300) and (1 <= B <= 300) and (R + Y + B <= 300)
+
+def make_well(i):
+    row = i // 12
+    col = i % 12 + 1
+    return f"{chr(65 + row)}{col}"
+
 experimentdesign = []
-for i in range(24):
-    R = 10 + (i % 6) * 20
-    Y = 10 + (i // 6) * 4 * 30
-    B = 300 - R - Y
-    if B < 1:
-        continue
-    experimentdesign.append({"R": R, "Y": Y, "B": B})
+
+if mode == "random":
+    import random
+    random.seed(seed)
+    attempts = 0
+    while len(experimentdesign) < n_samples:
+        attempts += 1
+        if attempts > 20000:
+            raise RuntimeError("Could not generate enough valid samples. Loosen bounds or reduce n_samples.")
+        R = random.randrange(R_min, R_max + 1, step)
+        Y = random.randrange(Y_min, Y_max + 1, step)
+        B = total_volume - R - Y
+        if not valid(R, Y, B):
+            continue
+        exp = {"R": R, "Y": Y, "B": B}
+        if use_wells:
+            exp["well"] = make_well(len(experimentdesign))
+        experimentdesign.append(exp)
+
+elif mode == "grid":
+    for R in range(R_min, R_max + 1, step):
+        for Y in range(Y_min, Y_max + 1, step):
+            B = total_volume - R - Y
+            if not valid(R, Y, B):
+                continue
+            exp = {"R": R, "Y": Y, "B": B}
+            if use_wells:
+                exp["well"] = make_well(len(experimentdesign))
+            experimentdesign.append(exp)
+            if len(experimentdesign) >= n_samples:
+                break
+        if len(experimentdesign) >= n_samples:
+            break
+else:
+    raise ValueError('mode must be "random" or "grid"')
+
 print("Designed", len(experimentdesign), "experiments")`;
   });
 
   document.getElementById("btn-clear").addEventListener("click", () => {
     if (confirm("Clear the script?")) document.getElementById("code").value = "";
   });
+
+  // Default UI starts on Advanced
+  setUIMode(false);
 
   // Start initialization in background
   getPyodide();
