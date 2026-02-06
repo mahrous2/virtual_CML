@@ -476,8 +476,9 @@ lab = VirtualColorMixingLab(randomseed=42, systematicnoiselevel=0.10, randomnois
       // Convert JS objects -> real Python dicts so exp.get(...) works
       pyodide.globals.set("experimentdesign_js", experimentdesign);
 
-      pyodide.runPython(`
-experimentdesign = [dict(x) for x in experimentdesign_js]
+     pyodide.runPython(`
+# Convert JS -> Python native types safely
+experimentdesign = experimentdesign_js.to_py()
 df = lab.run_experiment_batch(experimentdesign)
 results = df.to_dict(orient="records")
 `);
@@ -661,3 +662,4 @@ print("Designed", len(experimentdesign), "experiments")`;
 </script>
 </body>
 </html>
+
